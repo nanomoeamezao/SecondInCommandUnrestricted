@@ -2,12 +2,11 @@ package second_in_command.ui
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.RepLevel
+import com.fs.starfarer.api.characters.SkillSpecAPI
 import com.fs.starfarer.api.impl.campaign.ids.Sounds
 import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.CustomPanelAPI
-import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.Misc
 import lunalib.lunaExtensions.addLunaElement
@@ -17,13 +16,17 @@ import org.lwjgl.input.Keyboard
 import second_in_command.SCData
 import second_in_command.SCUtils
 import second_in_command.misc.*
-import second_in_command.specs.*
+import second_in_command.specs.SCAptitudeSection
+import second_in_command.specs.SCOfficer
+import second_in_command.specs.SCSpecStore
 import second_in_command.ui.elements.*
 import second_in_command.ui.panels.AssosciatesManagePanelPlugin
 import second_in_command.ui.tooltips.OfficerTooltipCreator
 import second_in_command.ui.tooltips.SCSkillTooltipCreator
 
-class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Boolean,/* var seedTextElement: LabelAPI, var seedElement: UIComponentAPI, var copyButton: UIComponentAPI*/) {
+class SCSkillMenuPanel(var parent: UIPanelAPI,
+                       var data: SCData,
+                       var title: Boolean/* var seedTextElement: LabelAPI, var seedElement: UIComponentAPI, var copyButton: UIComponentAPI*/) {
 
 
     lateinit var panel: CustomPanelAPI
@@ -31,15 +34,15 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
     var width = 0f
     var height = 0f
     var isAtColony = false
-    var elementSize = 72f
 
     var rowParents = HashMap<Int, CustomPanelAPI>()
+    var subpanel: CustomPanelAPI? = null
 
     companion object {
-        var crCost : Float
-            get() = SCSettings.crPenalty
-            set(value) {}
-        var lastScrollerY = 0f
+        var crCost = 0.20f
+        var lastAptitudeScrollerY = 0f
+        var lastVanillaAptitudeScrollerY = 0f
+        var isAptitudeTabSelected = true
     }
 
     fun init() {
@@ -101,44 +104,109 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
         playerPanel.init()
 
 
-        addAptitudePanel()
+        addHeaderPanel()
+        //addAptitudePanel()
 
-      /*  element.addCustom(seedTextElement as UIComponentAPI, 0f)
+        /*  element.addCustom(seedTextElement as UIComponentAPI, 0f)
 
-        element.addCustom(seedElement as UIComponentAPI, 0f)
+          element.addCustom(seedElement as UIComponentAPI, 0f)
 
-        element.addCustom(copyButton as UIComponentAPI, 0f)
+          element.addCustom(copyButton as UIComponentAPI, 0f)
 
-        copyButton.position.inTL(width-copyButton.getWidth()-26, height-copyButton.getHeight()-7)
-        seedElement.position.leftOfTop(copyButton, 3f)
-        seedTextElement.position.leftOfTop(seedElement, 3f)*/
+          copyButton.position.inTL(width-copyButton.getWidth()-26, height-copyButton.getHeight()-7)
+          seedElement.position.leftOfTop(copyButton, 3f)
+          seedTextElement.position.leftOfTop(seedElement, 3f)*/
 
 
 
-       // SkillWidgetElement(false, true, "", Color(255, 100, 0), element, 64f, 64f)
+        // SkillWidgetElement(false, true, "", Color(255, 100, 0), element, 64f, 64f)
+
+    }
+
+    fun addHeaderPanel() {
+
+        var headerSubpanel = Global.getSettings().createCustom(width, height, null)
+        element.addCustom(headerSubpanel, 0f)
+        headerSubpanel!!.position.inTL(20f, 285+5f+15)
+
+
+        var headerElement = headerSubpanel!!.createUIElement(width, 20f, false)
+        headerSubpanel!!.addUIElement(headerElement)
+        headerElement.position.inTL(0f, 0f)
+
+        var isVanillaSectionEnabled = getVanillaSystemAptitudes().isNotEmpty()
+
+        headerElement.addSectionHeading(if (isVanillaSectionEnabled) "" else "Executive Officers", Alignment.MID, 0f).apply {
+            position.inTL(-10f, 0f)
+            position.setSize(width-20, 20f)
+        }
+
+        if (isVanillaSectionEnabled) {
+            var executiveButton = ClickableTextButton("Executive Officers", Misc.getBasePlayerColor(), headerElement, 200f, 20f)
+            executiveButton.position.inTL(headerElement.widthSoFar/2-(executiveButton.width)-15, 1f)
+
+            headerElement.addTooltip(executiveButton.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 450f) { tooltip ->
+                tooltip.addPara("Executive officers provide fleetwide skills. They can be hired at the comm directory of colonies or found in derelict ships. " +
+                        "")
+            }
+
+
+            var otherSkillsButton = ClickableTextButton("Non-Executive Skills", Misc.getBasePlayerColor(), headerElement, 200f, 20f)
+            otherSkillsButton.position.inTL(headerElement.widthSoFar/2-15, 1f)
+
+            headerElement.addTooltip(otherSkillsButton.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 450f) { tooltip ->
+                tooltip.addPara("Section for modded skills not managed by Second-in-Command which use the vanilla skill system. Skills displayed here can not be acquired through skill points, " +
+                        "and can only be viewed, but some mods may provide separate ways to unlock some of those skills. ")
+            }
+
+            executiveButton.onClick {
+                executiveButton.playClickSound()
+                if (!isAptitudeTabSelected) {
+                    isAptitudeTabSelected = true
+                    executiveButton.active = true
+                    otherSkillsButton.active = false
+                    addAptitudePanel()
+                }
+            }
+
+            otherSkillsButton.onClick {
+                otherSkillsButton.playClickSound()
+                if (isAptitudeTabSelected) {
+                    isAptitudeTabSelected = false
+                    executiveButton.active = false
+                    otherSkillsButton.active = true
+                    addVanillaSkillsPanel()
+                }
+            }
+
+            if (isAptitudeTabSelected) {
+                executiveButton.active = true
+                addAptitudePanel()
+            } else {
+                addVanillaSkillsPanel()
+                otherSkillsButton.active = true
+            }
+        } else {
+            addAptitudePanel()
+        }
+
 
     }
 
 
     fun addAptitudePanel() {
 
-        var subpanel = Global.getSettings().createCustom(width, height, null)
-        element.addCustom(subpanel, 0f)
-        subpanel.position.inTL(20f, 285+5f+15)
-
-
-        var headerElement = subpanel.createUIElement(width, 20f, false)
-        subpanel.addUIElement(headerElement)
-        headerElement.position.inTL(0f, 0f)
-
-        headerElement.addSectionHeading("Executive Officers", Alignment.MID, 0f).apply {
-            position.inTL(-10f, 0f)
-            position.setSize(width-20, 20f)
+        if (subpanel != null) {
+            element.removeComponent(subpanel)
         }
+
+        subpanel = Global.getSettings().createCustom(width, height, null)
+        element.addComponent(subpanel)
+        subpanel!!.position.inTL(20f, 285+5f+15)
 
 
         var scrollerPanel = Global.getSettings().createCustom(width - 20, 400f, null)
-        subpanel.addComponent(scrollerPanel)
+        subpanel!!.addComponent(scrollerPanel)
         scrollerPanel.position.inTL(0f, 25f)
         val additionalOffset = if (SCSettings.additionalSlots > 0) -10f else 0f
         scrollerPanel.position.inTL(additionalOffset, 25f)
@@ -164,7 +232,7 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
         scrollerPanel.addUIElement(subelement)
         if (SCSettings.additionalSlots > 0) {
-            subelement.externalScroller.yOffset = lastScrollerY
+            subelement.externalScroller.yOffset = lastAptitudeScrollerY
         }
 
 
@@ -198,29 +266,20 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
         var isProgressionMode = SCSettings.progressionMode
         var level = Global.getSector().playerPerson.stats.level
-        val isLocked = when {
-            !isProgressionMode -> false // Все слоты разблокированы, если прогрессивная система отключена
-            slotId == 0 -> level < SCSettings.progressionSlot1Level!!
-            slotId == 1 -> level < SCSettings.progressionSlot2Level!!
-            slotId == 2 -> level < SCSettings.progressionSlot3Level!!
-            else -> level < (SCSettings.progressionSlot4Level!!)
+        var progressionLevel = when(slotId) {
+            0 -> SCSettings.progressionSlot1Level!!
+            1 -> SCSettings.progressionSlot2Level!!
+            2 -> SCSettings.progressionSlot3Level!!
+            3 -> SCSettings.progressionSlot4Level!!
+            else -> 0
         }
+        var isLocked = officer == null && isProgressionMode && level < progressionLevel
         var officerPickerElement = SCOfficerPickerElement(officer?.person, color, subelement, 96f, 96f)
         officerPickerElement.isProgressionLocked = isLocked
 
 
         var menu = this
         officerPickerElement.onClick {
-            // Добавляем проверку на null в самом начале
-            if (officer == null) {
-                // Логика для пустого слота
-                if (it.isRMBEvent) return@onClick // Правый клик на пустом слоте - ничего не делаем
-
-                var pickerMenu = SCOfficerPickerMenuPanel(menu, officerPickerElement, subpanelParent, slotId, data, isAtColony)
-                pickerMenu.init()
-                officerPickerElement.playClickSound()
-                return@onClick
-            }
             if (officerPickerElement.isInEditMode) {
                 //officerPickerElement.playSound("ui_char_can_not_increase_skill_or_aptitude", 1f, 1f)
                 return@onClick
@@ -231,8 +290,8 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
                 return@onClick
             }*/
 
-            if (SCUtils.isAssociatesBackgroundActive()) {
-                openResrictedOfficerManagementPanel(panel, subpanelParent, officer)
+            if (SCUtils.isAssociatesBackgroundActive() && officer != null) {
+                openResrictedOfficerManagementPanel(panel, subpanelParent, officer!!)
                 officerPickerElement.playClickSound()
                 return@onClick
             }
@@ -266,20 +325,8 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
             //Dont allow editing a locked slot
             if (isLocked) {
-                val requiredLevel = when(slotId) {
-                    0 -> SCSettings.progressionSlot1Level!!
-                    1 -> SCSettings.progressionSlot2Level!!
-                    2 -> SCSettings.progressionSlot3Level!!
-                    else -> SCSettings.progressionSlot4Level!!
-                }
-
-                subelement.addTooltip(officerPickerElement.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f) { tooltip ->
-                    tooltip.addPara("Slot locked (Requires level $requiredLevel)", 0f,
-                        Misc.getTextColor(), Misc.getHighlightColor(), "$requiredLevel")
-                }
-            } else {
-                subelement.addTooltipTo(OfficerTooltipCreator(officer, isAtColony, false),
-                    officerPickerElement.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
+                officerPickerElement.playSound("ui_char_can_not_increase_skill_or_aptitude", 1f, 1f)
+                return@onClick
             }
 
             var pickerMenu = SCOfficerPickerMenuPanel(menu, officerPickerElement, subpanelParent, slotId, data, isAtColony)
@@ -335,15 +382,9 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
         if (!isLocked) {
             subelement.addTooltipTo(OfficerTooltipCreator(officer, isAtColony, false), officerPickerElement.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
         } else {
-            val requiredLevel = when(slotId) {
-                0 -> SCSettings.progressionSlot1Level!!
-                1 -> SCSettings.progressionSlot2Level!!
-                2 -> SCSettings.progressionSlot3Level!!
-                else -> SCSettings.progressionSlot4Level!! // 5 - шаг уровней для доп. слотов
-            }
             subelement.addTooltip(officerPickerElement.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f) { tooltip ->
-                tooltip.addPara("This slot is locked until the player has reached level $requiredLevel and can not be used until then.", 0f
-                    ,Misc.getTextColor(), Misc.getHighlightColor(), "$requiredLevel")
+                tooltip.addPara("This slot is locked until the player has reached level $progressionLevel and can not be used until then.", 0f
+                    ,Misc.getTextColor(), Misc.getHighlightColor(), "$progressionLevel")
             }
         }
 
@@ -377,10 +418,10 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
         var aptitudePara = paraElement.innerElement.addPara(aptitudePlugin.getName(), 0f, aptitudePlugin.getColor(), aptitudePlugin.getColor())
         aptitudePara.position.inTL(paraElement.width / 2 - aptitudePara.computeTextWidth(aptitudePara.text) / 2 - 3, paraElement.height  -aptitudePara.computeTextHeight(aptitudePara.text)-5)
 
-      /*  officerPickerElement.innerElement.setParaFont("graphics/fonts/victor14.fnt")
-        var aptitudePara = officerPickerElement.innerElement.addPara(aptitudePlugin.getName(), 0f, aptitudePlugin.getColor(), aptitudePlugin.getColor())
-        aptitudePara.position.inTL(officerPickerElement.width / 2 - aptitudePara.computeTextWidth(aptitudePara.text) / 2 - 1, -aptitudePara.computeTextHeight(aptitudePara.text)-5)
-*/
+        /*  officerPickerElement.innerElement.setParaFont("graphics/fonts/victor14.fnt")
+          var aptitudePara = officerPickerElement.innerElement.addPara(aptitudePlugin.getName(), 0f, aptitudePlugin.getColor(), aptitudePlugin.getColor())
+          aptitudePara.position.inTL(officerPickerElement.width / 2 - aptitudePara.computeTextWidth(aptitudePara.text) / 2 - 1, -aptitudePara.computeTextHeight(aptitudePara.text)-5)
+  */
         var sections = aptitudePlugin.getSections()
 
         var originSkill = SCSpecStore.getSkillSpec(aptitudePlugin.getOriginSkillId())
@@ -404,7 +445,7 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
         for (section in sections) {
 
             var isLastSection = sections.last() == section
-            val canOnlyChooseOne = if (SCSettings.aptitudeGroupRestriction) false else !section.canChooseMultiple
+            var canOnlyChooseOne = !section.canChooseMultiple
 
             var firstSkillThisSection: SkillWidgetElement? = null
             var usedWidth = 0f
@@ -432,10 +473,7 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
                 section.activeSkillsInUI.add(skillElement)
                 usedWidth += 72f
 
-                var tooltip = SCSkillTooltipCreator(data, skillPlugin, aptitudePlugin,
-                    if (SCSettings.aptitudeGroupRestriction) 0 else section.requiredPreviousSkills,
-                    if (SCSettings.aptitudeGroupRestriction) false else !section.canChooseMultiple
-                )
+                var tooltip = SCSkillTooltipCreator(data, skillPlugin, aptitudePlugin, section.requiredPreviousSkills, !section.canChooseMultiple)
                 subelement.addTooltipTo(tooltip, skillElement.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW)
                 section.tooltips.add(tooltip)
 
@@ -471,7 +509,7 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
                 }
 
-                if (!SCSettings.aptitudeGroupRestriction && canOnlyChooseOne) {
+                if (canOnlyChooseOne) {
                     var underline = SkillUnderlineElement(color, 2f, subelement, usedWidth)
                     underline.position.belowLeft(firstSkillThisSection.elementPanel, 2f)
                 }
@@ -513,8 +551,8 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
                 recalculateSectionRequirements(officer, sections, skillElements)
 
                 if (officer.activeSkillIDs.count() == sections.sumOf { it.activeSkillsInUI.count { it.activated } }) {
-                   /* officerPickerElement.isInEditMode = false
-                    officerPickerElement.innerElement.clearChildren()*/
+                    /* officerPickerElement.isInEditMode = false
+                     officerPickerElement.innerElement.clearChildren()*/
                     exitEditMode(subpanelParent, officer, officerPickerElement, slotId)
                 }
             }
@@ -541,10 +579,133 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
         }
 
 
-      /*  var spPara = subelement.addPara("- $spRemaining", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "$spRemaining")
-        spPara.position.rightOfBottom(paraAnchorElement.elementPanel, 120f)*/
+        /*  var spPara = subelement.addPara("- $spRemaining", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "$spRemaining")
+          spPara.position.rightOfBottom(paraAnchorElement.elementPanel, 120f)*/
 
     }
+
+
+    fun getVanillaSystemAptitudes() : List<SkillSpecAPI> {
+        var skills = Global.getSettings().skillIds
+        var aptitudes = skills.map { Global.getSettings().getSkillSpec(it) }.filter { it.isAptitudeEffect }
+        aptitudes = aptitudes.filter { !it.hasTag("npc_only") }
+        aptitudes = aptitudes.filter { it.id != "aptitude_combat" && it.id != "aptitude_leadership" && it.id != "aptitude_technology" && it.id != "aptitude_industry"}
+        aptitudes = aptitudes.sortedBy { it.governingAptitudeOrder }
+        return aptitudes
+    }
+
+    fun addVanillaSkillsPanel() {
+        if (subpanel != null) {
+            element.removeComponent(subpanel)
+        }
+
+        subpanel = Global.getSettings().createCustom(width, height, null)
+        element.addComponent(subpanel)
+        subpanel!!.position.inTL(20f, 285+5f+15)
+
+        var scrollerPanel = Global.getSettings().createCustom(width - 20, 400f, null)
+        subpanel!!.addComponent(scrollerPanel)
+        scrollerPanel.position.inTL(-10f, 25f)
+
+        var subelement = scrollerPanel.createUIElement(width - 20, 400f, true)
+
+        var aptitudes = getVanillaSystemAptitudes()
+
+        subelement.addSpacer(10f)
+        for (aptitude in aptitudes) {
+            addVanillaSkillSection(aptitude, subelement)
+        }
+
+        subelement.addLunaElement(0f, 0f).advance {
+            lastVanillaAptitudeScrollerY = subelement.externalScroller.yOffset
+        }
+
+        scrollerPanel.addUIElement(subelement)
+        subelement.externalScroller.yOffset = lastVanillaAptitudeScrollerY
+
+    }
+
+    fun addVanillaSkillSection(aptitude: SkillSpecAPI, targetedElelement: TooltipMakerAPI) {
+        var subpanel = Global.getSettings().createCustom(width, 96f, null)
+        targetedElelement.addCustom(subpanel, 0f)
+
+        var subelement = subpanel.createUIElement(width, 96f, false)
+        subpanel.addUIElement(subelement)
+
+        var color = aptitude.governingAptitudeColor
+
+        var aptitudeElement = VanillaAptitudeSkillWidgetElement(aptitude.id, aptitude.spriteName, color, subelement, 110f, 70f)
+
+        var anchor = subelement.addLunaElement(0f, 0f)
+        anchor.position.belowLeft(aptitudeElement.elementPanel, 10f)
+
+        subelement.setParaFont("graphics/fonts/victor14.fnt")
+        var namePara = subelement.addPara(aptitude.name, 0f, color, color)
+        namePara.position.rightOfMid(anchor.elementPanel, aptitudeElement.width-namePara.computeTextWidth(namePara.text))
+
+        var background = VanillaAptitudeBackgroundElement(color, subelement)
+        background.position.rightOfMid(aptitudeElement.elementPanel, 1f)
+
+        var gap = SkillGapElement(color, subelement, 2f)
+        gap.renderArrow = true
+        gap.position.rightOfMid(aptitudeElement.elementPanel, 10f)
+
+
+        var skillIds = Global.getSettings().skillIds
+        var skills = skillIds.map { Global.getSettings().getSkillSpec(it) }.filter { it.governingAptitudeId == aptitude.governingAptitudeId }
+        skills = skills.filter { !it.hasTag("npc_only") && !it.hasTag("ai_core_only") && !it.hasTag("deprecated") && !it.isAptitudeEffect }
+        skills = skills.sortedBy { it.order }
+
+        var playerStats = Global.getSector().playerPerson.stats
+        var previous: UIPanelAPI = background.elementPanel
+        for (skill in skills) {
+            var skillLevel = playerStats.getSkillLevel(skill.id)
+            var activated = skillLevel >= 1f
+            var isFirst = skill == skills.first()
+            var isLast = skill == skills.last()
+
+            var skillElement = SkillWidgetElement(skill.id, aptitude.id, activated, activated, false, skill.spriteName, "combat1", color, subelement, 72f, 72f)
+
+            //Only works on combat skills
+            /* var skillTooltip = ReflectionUtils.invokeStatic(9, "createSkillTooltip", StandardTooltipV2::class.java,
+                 skill, playerStats,
+                 800f, 10f, true, false, 1000, null, null)
+
+             ReflectionUtils.invokeStatic(2, "addTooltipBelow", StandardTooltipV2Expandable::class.java, skillElement.elementPanel, skillTooltip)*/
+
+
+            //Fake person that will always have the selected skill leveled, so that the description doesnt look off
+            val fake = Global.getFactory().createPerson()
+            fake.stats.setSkillLevel(skill.id, 2f)
+            var tip = VanillaSkillTooltipForVanillaSection(subelement, fake, skill)
+
+            subelement.addTooltipTo(tip, skillElement.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, false)
+
+            skillElement.onClick {
+                skillElement.playClickSound()
+            }
+
+            if (isFirst) {
+                skillElement.position.rightOfMid(previous, 55f)
+            } else {
+                skillElement.position.rightOfMid(previous, 7f)
+            }
+
+            if (!isLast) {
+                var seperator = SkillSeperatorElement(color, subelement)
+                seperator.position.rightOfTop(skillElement.elementPanel, 3f)
+
+            }
+            previous = skillElement.elementPanel
+
+        }
+
+    }
+
+
+
+
+
 
     fun calculateRemainingSP(offficer: SCOfficer, skills: ArrayList<SkillWidgetElement>) : Int {
         var newSkills = skills.filter { !offficer.activeSkillIDs.contains(it.id) && it.activated }
@@ -634,7 +795,8 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
                     skillElement.canChangeState = false
                 }
             }
-            if (!SCSettings.aptitudeGroupRestriction && !section.canChooseMultiple) {
+
+            if (!section.canChooseMultiple) {
                 if (section.activeSkillsInUI.any { it.activated }) {
                     for (skillElement in section.activeSkillsInUI) {
                         if (skillElement.preAcquired) continue
@@ -670,16 +832,14 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
             var cost = (crCost * 100).toInt()
 
-            Global.getSector().campaignUI.messageDisplay.addMessage("Applied a $cost% penalty to all ships combat-readiness due to changing officers outside of the range of a colony.",
-            Misc.getBasePlayerColor(), "$cost%", Misc.getHighlightColor(), )
+            Global.getSector().campaignUI.messageDisplay.addMessage(
+                "Applied a $cost% penalty to all ships combat-readiness due to changing officers outside of the range of a colony.",
+                Misc.getBasePlayerColor(), "$cost%", Misc.getHighlightColor(),
+            )
         }
     }
 
     fun openResrictedOfficerManagementPanel(panel: CustomPanelAPI, subpanelParent: CustomPanelAPI, officer: SCOfficer) {
-        if (officer == null) {
-            Global.getLogger(this.javaClass).warn("Attempted to open management panel for null officer")
-            return
-        }
         var plugin = AssosciatesManagePanelPlugin(panel)
 
         var width = 316f
