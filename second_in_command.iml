@@ -14,8 +14,8 @@
     <orderEntry type="library" exported="" name="MagicLib" level="project" />
     <orderEntry type="library" exported="" name="ShipMasterySystem" level="project" />
     <orderEntry type="library" exported="" name="Graphics" level="project" />
-    <orderEntry type="library" exported="" name="lw_Console" level="project" />
     <orderEntry type="library" exported="" name="ExerelinCore" level="project" />
     <orderEntry type="library" exported="" name="LazyLib" level="project" />
+    <orderEntry type="library" name="lw_Console" level="project" />
   </component>
 </module>
