@@ -450,6 +450,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
                 if (isBlocked) {
                     confirmButton.color = Misc.getGrayColor()
                     confirmButton.blink = false
+
                     return@advance
                 }
                 // Разблокируем кнопку, если ограничение ВКЛЮЧЕНО (true) или конфликтов нет
