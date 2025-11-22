@@ -33,8 +33,7 @@ class ContinuousRepairs : SCBaseSkillPlugin() {
     override fun addTooltip(data: SCData, tooltip: TooltipMakerAPI) {
 
         tooltip.addPara("Ships lost in combat have a 60/60/40/30 percent chance to avoid d-mods, based on hullsize", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
-        tooltip.addPara("Every 240 deployment points worth of opponents defeated remove a random d-mod from a random ship", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
-        tooltip.addPara("   - Defeated capital ships provide twice as much towards this score", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "capital ships", "twice")
+        tooltip.addPara("Every 50 deployment points worth of opponents defeated remove a random d-mod from a random ship", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
         tooltip.addPara("   - This effect can trigger multiple times from the same battle", 0f, Misc.getTextColor(), Misc.getHighlightColor())
         tooltip.addPara("   - This count is being kept track of between battles", 0f, Misc.getTextColor(), Misc.getHighlightColor())
         tooltip.addPara("   - Ignores ships with the Rugged Construction hullmod", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "Rugged Construction")
@@ -131,7 +130,7 @@ class ContinousIntel(var pick: FleetMemberAPI, var specId: String) : BaseIntelPl
 
 class ContinuousRepairsListener() : BaseCampaignEventListener(false) {
 
-    var required = 240
+    var required = 50
 
     override fun reportEncounterLootGenerated(plugin: FleetEncounterContextPlugin?, loot: CargoAPI?) {
         if (plugin == null) return

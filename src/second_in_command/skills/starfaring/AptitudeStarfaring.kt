@@ -31,19 +31,12 @@ class AptitudeStarfaring : SCBaseAptitudePlugin() {
         section1.addSkill("sc_starfaring_recovery_efforts")
         section1.addSkill("sc_starfaring_makeshift_equipment")
         //section1.addSkill("sc_starfaring_reactive_burn")
+        section1.addSkill("sc_starfaring_navigation")
+        section1.addSkill("sc_starfaring_starmapping")
+        section1.addSkill("sc_starfaring_emergency_order")
+        section1.addSkill("sc_starfaring_expedition")
+        section1.addSkill("sc_starfaring_continuous_repairs")
         addSection(section1)
-
-        var section2 = SCAptitudeSection(true, 1, "industry2")
-        section2.addSkill("sc_starfaring_navigation")
-        section2.addSkill("sc_starfaring_starmapping")
-        section2.addSkill("sc_starfaring_emergency_order")
-        addSection(section2)
-
-        var section3 = SCAptitudeSection(false, 3, "industry4")
-        section3.addSkill("sc_starfaring_expedition")
-        section3.addSkill("sc_starfaring_continuous_repairs")
-        addSection(section3)
-
 
     }
 

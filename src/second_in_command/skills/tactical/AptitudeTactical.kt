@@ -28,16 +28,11 @@ class AptitudeTactical : SCBaseAptitudePlugin() {
         section1.addSkill("sc_tactical_tactical_drills")
         section1.addSkill("sc_tactical_efficient_ordnance")
         //section1.addSkill("sc_tactical_superiority")
+        section1.addSkill("sc_tactical_full_throttle")
+        section1.addSkill("sc_tactical_accelerated_barrels")
+        section1.addSkill("sc_tactical_mass_bombardment")
+        section1.addSkill("sc_tactical_defensive_protocols")
         addSection(section1)
-
-        var section2 = SCAptitudeSection(true, 3, "combat2")
-        section2.addSkill("sc_tactical_full_throttle")
-        section2.addSkill("sc_tactical_accelerated_barrels")
-        section2.addSkill("sc_tactical_mass_bombardment")
-        section2.addSkill("sc_tactical_defensive_protocols")
-        addSection(section2)
-
-
     }
 
     override fun getNPCFleetSpawnWeight(data: SCData, fleet: CampaignFleetAPI)  : Float {

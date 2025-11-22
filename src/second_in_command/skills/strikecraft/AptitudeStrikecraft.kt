@@ -29,16 +29,11 @@ class AptitudeStrikecraft : SCBaseAptitudePlugin() {
         section1.addSkill("sc_strikecraft_distanced_support")
         section1.addSkill("sc_strikecraft_system_proficiency")
         section1.addSkill("sc_strikecraft_swarm_deployment")
+        section1.addSkill("sc_strikecraft_reconfiguration")
+        section1.addSkill("sc_strikecraft_advanced_maneuvers")
+        section1.addSkill("sc_strikecraft_synchronised")
+        section1.addSkill("sc_strikecraft_barrage")
         addSection(section1)
-
-        var section2 = SCAptitudeSection(true, 3, "leadership4")
-        section2.addSkill("sc_strikecraft_reconfiguration")
-        section2.addSkill("sc_strikecraft_advanced_maneuvers")
-        section2.addSkill("sc_strikecraft_synchronised")
-        section2.addSkill("sc_strikecraft_barrage")
-        addSection(section2)
-
-
     }
 
     override fun getNPCFleetSpawnWeight(data: SCData, fleet: CampaignFleetAPI)  : Float {

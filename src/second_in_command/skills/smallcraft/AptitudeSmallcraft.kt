@@ -9,7 +9,6 @@ import second_in_command.specs.SCAptitudeSection
 import second_in_command.specs.SCBaseAptitudePlugin
 
 class AptitudeSmallcraft : SCBaseAptitudePlugin() {
-
     override fun addCodexDescription(tooltip: TooltipMakerAPI) {
         tooltip.addPara("Smallcraft is an aptitude all about frigates and destroyers. " +
                 "It is especially helpful for Wolfpack fleets, but can also come of use in any fleet with a lot of smaller ships. ",
@@ -28,18 +27,11 @@ class AptitudeSmallcraft : SCBaseAptitudePlugin() {
         section1.addSkill("sc_smallcraft_coordinated_maneuvers")
         section1.addSkill("sc_smallcraft_jumpstart")
         section1.addSkill("sc_smallcraft_trapped_prey")
+        section1.addSkill("sc_smallcraft_together_as_one")
+        section1.addSkill("sc_smallcraft_leader_of_the_pack")
+        section1.addSkill("sc_smallcraft_support_doctrine")
+        section1.addSkill("sc_smallcraft_quick_as_the_wind")
         addSection(section1)
-
-        var section2 = SCAptitudeSection(false, 2, "leadership2")
-        section2.addSkill("sc_smallcraft_together_as_one")
-        section2.addSkill("sc_smallcraft_leader_of_the_pack")
-        addSection(section2)
-
-        var section3 = SCAptitudeSection(false, 4, "leadership5")
-        section3.addSkill("sc_smallcraft_support_doctrine")
-        section3.addSkill("sc_smallcraft_quick_as_the_wind")
-        addSection(section3)
-
     }
 
     override fun getNPCFleetSpawnWeight(data: SCData, fleet: CampaignFleetAPI)  : Float {

@@ -15,7 +15,7 @@ class AdvancedManeuvers : SCBaseSkillPlugin() {
     }
 
     override fun addTooltip(data: SCData, tooltip: TooltipMakerAPI) {
-
+        tooltip.addPara("+25%% top speed", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
         tooltip.addPara("+10%% damage dealt", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
         tooltip.addPara("+15%% weapon fire rate", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
         tooltip.addPara("+50%% target leading accuracy", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
@@ -35,9 +35,9 @@ class AdvancedManeuvers : SCBaseSkillPlugin() {
 
         stats.autofireAimAccuracy.modifyFlat(id, 0.5f)
 
-        /* stats.maxSpeed.modifyPercent(id, 25f)
+         stats.maxSpeed.modifyPercent(id, 25f)
          stats.acceleration.modifyPercent(id, 25f*2)
-         stats.deceleration.modifyPercent(id, 25f*2)*/
+         stats.deceleration.modifyPercent(id, 25f*2)
 
         stats.ballisticWeaponDamageMult.modifyPercent(id, 10f)
         stats.energyWeaponDamageMult.modifyPercent(id, 10f)
