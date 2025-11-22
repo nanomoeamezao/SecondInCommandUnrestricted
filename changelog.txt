@@ -1,3 +1,7 @@
+Version 1.7.0 unrestricted
+- Synched to sic 1.7.0
+- Merged in skill changes from Cheat version (aptitude slopping, no choose-one skills, advanced maneuvers and barrage buffs)
+
 Version 1.6.8 unchained
 
 - Merged with SiC Safety Overrides Addon
