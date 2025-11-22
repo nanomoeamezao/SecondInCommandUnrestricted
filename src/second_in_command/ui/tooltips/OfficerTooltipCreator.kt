@@ -5,7 +5,6 @@ import com.fs.starfarer.api.ui.BaseTooltipCreator
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
 import second_in_command.SCUtils
-import second_in_command.misc.SCSettings
 import second_in_command.specs.SCOfficer
 import second_in_command.ui.SCSkillMenuPanel
 import second_in_command.ui.elements.OfficerXPBar
@@ -146,7 +145,7 @@ class OfficerTooltipCreator(var officer: SCOfficer?, var isAtColony: Boolean, va
 
         var colonyText = "You are currently in range of a colony."
         var colonyColor = Misc.getPositiveHighlightColor()
-        var penalty = (SCSettings.crPenalty * 100f).toInt()
+        var penalty = (SCSkillMenuPanel.crCost * 100f).toInt()
 
         if (!isAtColony) {
             colonyText = "You are not in range of a colony."

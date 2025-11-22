@@ -23,6 +23,7 @@ class SkillWidgetElement(var id: String, var aptitudeId: String, var activated: 
 
     var hoverFade = 0f
     var time = 0f
+
     var isElite = false
 
     companion object {
@@ -129,6 +130,7 @@ class SkillWidgetElement(var id: String, var aptitudeId: String, var activated: 
 
         sprite.renderAtCenter(x + (width / 2).toInt(), y + (height / 2).toInt())
 
+
         if (isElite) {
             eliteBackground.setNormalBlend()
             eliteBackground.color = color.darker()
@@ -190,8 +192,6 @@ class SkillWidgetElement(var id: String, var aptitudeId: String, var activated: 
             inactiveBorder.alphaMult = alphaMult * 0.2f
             inactiveBorder.renderAtCenter(x + (width / 2).toInt(), y + (height / 2).toInt())
         }
-
-
 
         sprite.setAdditiveBlend()
         sprite.setSize(width-8, height-8)
