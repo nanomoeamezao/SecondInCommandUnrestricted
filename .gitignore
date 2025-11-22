@@ -196,3 +196,14 @@ nbdist/
 .idea/vcs.xml
 
 .idea/csv-editor.xml
+/.idea/libraries/commons_compiler.xml
+/.idea/libraries/ExerelinCore.xml
+/.idea/libraries/Graphics.xml
+/.idea/libraries/KotlinJavaRuntime.xml
+/.idea/libraries/LazyLib.xml
+/.idea/libraries/LunaLib.xml
+/.idea/libraries/lw_Console.xml
+/.idea/libraries/MagicLib.xml
+/jars/SecondInCommand.jar
+/.idea/libraries/ShipMasterySystem.xml
+/.idea/libraries/starfarer_api.xml
